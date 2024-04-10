@@ -49,8 +49,6 @@ class _StockPageState extends State<StockPage> {
     readJson().then((data) {
       setState(() {
         jsonData = List<Map<String, dynamic>>.from(data);
-        print(jsonData);
-        print(jsonData.length);
       });
     }).catchError((error) {});
   }
