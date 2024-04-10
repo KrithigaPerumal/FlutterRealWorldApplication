@@ -3,10 +3,11 @@
 //form widget to create the bill
 //validate the bill on submit and add the bill to the list
 // the newly added bill will be shown here.
+import 'dart:convert';
 import 'package:billing_system_application/bills.dart';
+import 'package:billing_system_application/showbills.dart';
 import 'package:billing_system_application/stockpage.dart';
 import 'package:flutter/material.dart';
-
 
 List<Bills> billList = [];
 
@@ -19,9 +20,11 @@ class BillingPage extends StatefulWidget {
 }
 
 class _BillingPageState extends State<BillingPage> {
+  @override
   void initState() {
     super.initState();
-    //print('values are is $jsonData');
+    Bills.readJson();
+    print('bills called from billing $allbillsList');
   }
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -30,6 +33,7 @@ class _BillingPageState extends State<BillingPage> {
   double prodPrice = 0;
   String prodId = "";
   int prodStock = 0;
+  String billDate = "";
 
   List<CartList> cartList = [];
 
@@ -55,7 +59,7 @@ class _BillingPageState extends State<BillingPage> {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: SizedBox(
               width: MediaQuery.of(context).size.width * 0.75,
-              height: MediaQuery.of(context).size.height * 0.25,
+              height: MediaQuery.of(context).size.height * 0.30,
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -94,7 +98,11 @@ class _BillingPageState extends State<BillingPage> {
                         child: FloatingActionButton(
                           heroTag: "butn2",
                           onPressed: () {
-                            int len = cartList.length;
+                            DateTime now = DateTime.now();
+                            int year = now.year;
+                            int month = now.month;
+                            int day = now.day;
+                            billDate = "$day/$month/$year";
                             if (_formKey.currentState!.validate()) {
                               _formKey.currentState!.save();
                               print(prodId);
@@ -120,7 +128,6 @@ class _BillingPageState extends State<BillingPage> {
                                     cartList.add(newbill);
                                   });
                                   totalPrice += prodPrice;
-                                  print('after adding $len');
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
@@ -169,12 +176,11 @@ class _BillingPageState extends State<BillingPage> {
                       Text('Price: ${item.productPrice}'),
                     ],
                   ),
-                  
                   trailing: GestureDetector(
                     onTap: () {
                       setState(() {
                         cartList.removeAt(index);
-                        //also have to reduce from the total price. 
+                        //also have to reduce from the total price.
                       });
                     },
                     child: Icon(
@@ -187,30 +193,100 @@ class _BillingPageState extends State<BillingPage> {
               },
             ),
           ),
-          
-          SizedBox(
-              child: FloatingActionButton(
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              SizedBox(
+                  child: FloatingActionButton(
                 heroTag: "butn1",
-            onPressed: () async{
-              //creates a new bill
-              //to do:
-              //have to remove the list tiles when pressed and display the created bill. 
-              //have to update the products.json file
-              //have to write in the bills.json file. 
-              Bills newbill = Bills(totalPrice: totalPrice, cartProducts: cartList );
-              await Bills.writeBillsJson(billList);
-              setState(() {
-                billList.add(newbill);
-              });
-              print(billList);
-             // print(newbill.billId);
-              print(newbill.cartProducts.length);
-              print(newbill.totalPrice);
-            },
-            child: Text("Bill"),
-          ))
+                onPressed: () async {
+                  //to do:
+                  //have to update the products.json file
+                  Bills newbill = Bills(
+                      totalPrice: totalPrice,
+                      cartProducts: cartList,
+                      billedDate: billDate);
+                  //check wheather the set state is required here?
+                  setState(() {
+                    billList.add(newbill);
+                    print(DateTime.now().toString());
+                    showBill(context);
+                  });
+                  await Bills.writeBillsJson(billList);
+                  //showing the bill here.
+                  print(newbill.totalPrice);
+                },
+                child: Text("Bill"),
+              )),
+              FloatingActionButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ShowBillsPage()),
+                  );
+                },
+                child: Text("View Bills"),
+              )
+            ],
+          )
         ],
       ),
     );
+  }
+
+  //update the products.json - call the writeto json.
+  updateProductStock(BuildContext context) {
+    for (var product in cartList) {
+      for (var productStock in jsonData) {
+        //if(product.productId == jsonData.prodId)
+      }
+    }
+  }
+
+  showBill(BuildContext context) {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Row(
+              children: [
+                Text("Bill"),
+                Text(billDate),
+              ],
+            ),
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: cartList.map((product) {
+                    // Display each product in the cartProducts list
+                    return Column(
+                      children: [
+                        Text(
+                            '${product.productId} - ${product.productName} - ${product.productPrice}'),
+                        Divider(),
+                      ],
+                    );
+                  }).toList(),
+                ),
+                Text('Total Price: $totalPrice'),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  //reseting the values and the display.
+                  setState(() {
+                    cartList.clear();
+                    totalPrice = 0;
+                  });
+                  Navigator.of(context).pop();
+                },
+                child: Text('Close'),
+              )
+            ],
+          );
+        });
   }
 }
