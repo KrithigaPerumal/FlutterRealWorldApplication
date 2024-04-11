@@ -1,9 +1,7 @@
-//import 'package:billing_system_application/stockpage.dart';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:billing_system_application/stockpage.dart';
-//import 'package:billing_system_application/userlogin.dart';
+import 'package:billing_system_application/userlogin.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -23,14 +21,11 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const StockPage(),
+      home: const UserLoginPage(),
     );
   }
 }
 
-//creating a file for storing the users details
-//runs only once for creating the file. 
-//this file will be read and loaded in the application in - userlogin.dart
 Future<void> createUsersJsonFile() async {
   final directory = await getApplicationDocumentsDirectory();
   print(directory);
