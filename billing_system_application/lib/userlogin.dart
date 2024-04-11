@@ -51,6 +51,7 @@ class _UserLoginPageState extends State<UserLoginPage> {
     return Scaffold(
       backgroundColor: Colors.amber.shade100,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.purple,
         title: Center(
           child: Text(

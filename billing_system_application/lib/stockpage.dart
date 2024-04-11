@@ -1,10 +1,8 @@
-//contains the products list in a table.
-//has two buttons - create and edit.
-
 import 'dart:convert';
 import 'dart:io';
 import 'package:billing_system_application/billingpage.dart';
 import 'package:billing_system_application/products.dart';
+import 'package:billing_system_application/userlogin.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -58,7 +56,25 @@ class _StockPageState extends State<StockPage> {
     return Scaffold(
         backgroundColor: Colors.amber.shade100,
         appBar: AppBar(
-          title: Text("Shopping application"),
+          automaticallyImplyLeading: false,
+          actions: [
+            TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const UserLoginPage()),
+                  );
+                },
+                child: const Text(
+                  "Log out",
+                  style: TextStyle(color: Colors.white, fontSize: 20),
+                ))
+          ],
+          title: const Text(
+            "Products Stocks",
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
           backgroundColor: Colors.purple,
         ),
         body: Padding(
@@ -78,7 +94,7 @@ class _StockPageState extends State<StockPage> {
                     );
                   }).toList(),
                 ),
-                Spacer(),
+                const Spacer(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -89,14 +105,14 @@ class _StockPageState extends State<StockPage> {
                         //what happens if i dont pass the context here?
                         formForProduct(context);
                       },
-                      child: Text("Add"),
+                      child: const Text("Add"),
                     ),
                     FloatingActionButton(
                       heroTag: "btn2",
                       onPressed: () {
                         editProduct(context);
                       },
-                      child: Text("Edit"),
+                      child: const Text("Edit"),
                     ),
                     FloatingActionButton(
                       heroTag: "btn3",
@@ -104,10 +120,10 @@ class _StockPageState extends State<StockPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => BillingPage()),
+                              builder: (context) => const BillingPage()),
                         );
                       },
-                      child: Text("biling"),
+                      child: const Text("biling"),
                     ),
                   ],
                 ),
@@ -126,7 +142,7 @@ class _StockPageState extends State<StockPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Product Form'),
+          title: const Text('Product Form'),
           content: Form(
             key: _formKey,
             child: Column(
@@ -134,7 +150,7 @@ class _StockPageState extends State<StockPage> {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 TextFormField(
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: 'Enter product ID',
                   ),
                   validator: (String? value) {
@@ -146,7 +162,7 @@ class _StockPageState extends State<StockPage> {
                   },
                 ),
                 TextFormField(
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: 'Enter product Name',
                   ),
                   validator: (String? value) {
@@ -158,7 +174,7 @@ class _StockPageState extends State<StockPage> {
                   },
                 ),
                 TextFormField(
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: 'Enter price',
                   ),
                   validator: (String? value) {
@@ -171,7 +187,7 @@ class _StockPageState extends State<StockPage> {
                   },
                 ),
                 TextFormField(
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: 'Enter product stock',
                   ),
                   validator: (String? value) {
@@ -190,7 +206,7 @@ class _StockPageState extends State<StockPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -206,6 +222,7 @@ class _StockPageState extends State<StockPage> {
                   List<Products> newProducts = jsonData
                       .map((productMap) => Products.fromJson(productMap))
                       .toList();
+
                   await Products.writeJson(newProducts);
                   setState(() {
                     jsonData =
@@ -220,7 +237,7 @@ class _StockPageState extends State<StockPage> {
                   );
                 }
               },
-              child: Text('Submit'),
+              child: const Text('Submit'),
             ),
           ],
         );
@@ -228,24 +245,18 @@ class _StockPageState extends State<StockPage> {
     );
   }
 
-  //how to update the existing data?
-  //get the product id from the user
-  //-- use a form field again
-  //-- validate the product id by checking if it exists in the json data: use equals to traverse the list
-  //--if it is true- return another form with all the existing data in the forms - with editing option
-  //--on submission of this form - data should be over written in the product id data.
   editProduct(BuildContext context) {
     String? enteredID;
     return showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Enter Product ID to Edit'),
+          title: const Text('Enter Product ID to Edit'),
           content: TextField(
             onChanged: (value) {
               enteredID = value;
             },
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               hintText: 'Enter Product ID',
             ),
           ),
@@ -254,7 +265,7 @@ class _StockPageState extends State<StockPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -280,7 +291,7 @@ class _StockPageState extends State<StockPage> {
                   );
                 }
               },
-              child: Text('Edit'),
+              child: const Text('Edit'),
             ),
           ],
         );
@@ -298,7 +309,7 @@ class _StockPageState extends State<StockPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Edit Product'),
+          title: const Text('Edit Product'),
           content: Form(
             key: _formKey,
             child: Column(
@@ -312,7 +323,7 @@ class _StockPageState extends State<StockPage> {
                 ),
                 TextFormField(
                   initialValue: productName,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: 'Enter product Name',
                   ),
                   onChanged: (value) {
@@ -327,7 +338,7 @@ class _StockPageState extends State<StockPage> {
                 ),
                 TextFormField(
                   initialValue: productPrice.toString(),
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: 'Enter price',
                   ),
                   onChanged: (value) {
@@ -343,7 +354,7 @@ class _StockPageState extends State<StockPage> {
                 ),
                 TextFormField(
                   initialValue: productQuant.toString(),
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: 'Enter product stock',
                   ),
                   onChanged: (value) {
@@ -365,7 +376,7 @@ class _StockPageState extends State<StockPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -399,7 +410,7 @@ class _StockPageState extends State<StockPage> {
                   Navigator.of(context).pop();
                 }
               },
-              child: Text('Update'),
+              child: const Text('Update'),
             ),
           ],
         );

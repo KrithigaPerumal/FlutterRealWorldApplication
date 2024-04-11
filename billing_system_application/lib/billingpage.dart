@@ -1,17 +1,14 @@
-//here is where the billing in done.
-//create a button to add a new bill
-//form widget to create the bill
-//validate the bill on submit and add the bill to the list
-// the newly added bill will be shown here.
-import 'dart:convert';
 import 'package:billing_system_application/bills.dart';
+import 'package:billing_system_application/products.dart';
 import 'package:billing_system_application/showbills.dart';
 import 'package:billing_system_application/stockpage.dart';
 import 'package:flutter/material.dart';
 
 List<Bills> billList = [];
 
-//const IconData trash = IconData(0xf4c4, fontFamily: iconFont, fontPackage: iconFontPackage);
+List<Products> newProducts =
+    jsonData.map((productMap) => Products.fromJson(productMap)).toList();
+
 class BillingPage extends StatefulWidget {
   const BillingPage({super.key});
 
@@ -24,7 +21,6 @@ class _BillingPageState extends State<BillingPage> {
   void initState() {
     super.initState();
     Bills.readJson();
-    print('bills called from billing $allbillsList');
   }
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -45,15 +41,32 @@ class _BillingPageState extends State<BillingPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.purple,
-        title: Text(
-          "Billing Page",
-          style: TextStyle(color: Colors.white),
+        title: Row(
+          children: [
+            IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => StockPage()),
+                );
+              },
+              icon: Icon(
+                Icons.arrow_back_ios_new_sharp,
+                color: Colors.white,
+              ),
+            ),
+            Text(
+              "Billing Page",
+              style: TextStyle(color: Colors.white),
+            ),
+          ],
         ),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -86,12 +99,10 @@ class _BillingPageState extends State<BillingPage> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter some text';
                         }
-                        //int quantity = int.tryParse(value) ?? 0;
                         return null;
                       },
                     ),
                     SizedBox(
-                      //height: MediaQuery.of(context).size.height*0.20,
                       width: MediaQuery.of(context).size.width * 0.30,
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -105,8 +116,7 @@ class _BillingPageState extends State<BillingPage> {
                             billDate = "$day/$month/$year";
                             if (_formKey.currentState!.validate()) {
                               _formKey.currentState!.save();
-                              print(prodId);
-                              //print(qunatity);
+
                               int index = jsonData.indexWhere(
                                   (product) => product['productId'] == prodId);
                               if (index != -1) {
@@ -119,13 +129,13 @@ class _BillingPageState extends State<BillingPage> {
 
                                 //procceed to add to cart only when the entered quantity is avaiable in the stock.
                                 if (quantity <= prodStock) {
-                                  CartList newbill = CartList(
+                                  CartList newprod = CartList(
                                       productId: prodId,
                                       productName: prodName,
                                       stockCount: quantity,
                                       productPrice: prodPrice);
                                   setState(() {
-                                    cartList.add(newbill);
+                                    cartList.add(newprod);
                                   });
                                   totalPrice += prodPrice;
                                 } else {
@@ -200,33 +210,37 @@ class _BillingPageState extends State<BillingPage> {
                   child: FloatingActionButton(
                 heroTag: "butn1",
                 onPressed: () async {
-                  //to do:
-                  //have to update the products.json file
                   Bills newbill = Bills(
                       totalPrice: totalPrice,
                       cartProducts: cartList,
                       billedDate: billDate);
                   //check wheather the set state is required here?
+                  allbillsList.add(newbill);
+                  await Bills.writeBillsJson(allbillsList);
                   setState(() {
-                    billList.add(newbill);
-                    print(DateTime.now().toString());
+                    updateProductStock(cartList);
                     showBill(context);
+                    jsonData =
+                        newProducts.map((product) => product.toJson()).toList();
                   });
-                  await Bills.writeBillsJson(billList);
-                  //showing the bill here.
-                  print(newbill.totalPrice);
                 },
                 child: Text("Bill"),
               )),
-              FloatingActionButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => ShowBillsPage()),
-                  );
-                },
-                child: Text("View Bills"),
-              )
+              SizedBox(
+                child: FloatingActionButton(
+                  heroTag: "btn2",
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ShowBillsPage()),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text("View Bills"),
+                  ),
+                ),
+              ),
             ],
           )
         ],
@@ -235,12 +249,20 @@ class _BillingPageState extends State<BillingPage> {
   }
 
   //update the products.json - call the writeto json.
-  updateProductStock(BuildContext context) {
-    for (var product in cartList) {
-      for (var productStock in jsonData) {
-        //if(product.productId == jsonData.prodId)
+  updateProductStock(List<CartList> cartlist) {
+    for (var product in cartlist) {
+      for (var productStock in newProducts) {
+        print(
+            "before subtraction ${productStock.productId}- ${productStock.stockCount}");
+        if (product.productId == productStock.productId) {
+          productStock.stockCount -= product.stockCount;
+          print(
+              "after subtraction ${productStock.productId}- ${productStock.stockCount}");
+        }
       }
     }
+
+    Products.writeJson(newProducts);
   }
 
   showBill(BuildContext context) {
