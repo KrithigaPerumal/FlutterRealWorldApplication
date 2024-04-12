@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:billing_system_application/stockpage.dart';
+import 'package:billing_system_application/stock_page.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 

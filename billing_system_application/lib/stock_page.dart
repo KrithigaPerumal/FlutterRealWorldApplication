@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:billing_system_application/billingpage.dart';
+import 'package:billing_system_application/billing_page.dart';
 import 'package:billing_system_application/products.dart';
-import 'package:billing_system_application/userlogin.dart';
+import 'package:billing_system_application/user_login.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -86,10 +86,22 @@ class _StockPageState extends State<StockPage> {
                   children: jsonData.map<TableRow>((product) {
                     return TableRow(
                       children: [
-                        Text(product['productId'].toString()),
-                        Text(product['productName'].toString()),
-                        Text(product['stockCount'].toString()),
-                        Text(product['productPrice'].toString()),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(product['productId'].toString()),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(product['productName'].toString()),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(product['stockCount'].toString()),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(product['productPrice'].toString()),
+                        ),
                       ],
                     );
                   }).toList(),
@@ -123,7 +135,7 @@ class _StockPageState extends State<StockPage> {
                               builder: (context) => const BillingPage()),
                         );
                       },
-                      child: const Text("biling"),
+                      child: const Text("Billing"),
                     ),
                   ],
                 ),
@@ -133,7 +145,7 @@ class _StockPageState extends State<StockPage> {
 
   //here the details for adding a new product will be received from the user.
 //on submit -- do validation, add the new product to the list.
-  formForProduct(BuildContext context) {
+  Future formForProduct(BuildContext context) {
     productID = ''; // Reset the variables
     productName = '';
     productPrice = 0;
@@ -194,6 +206,11 @@ class _StockPageState extends State<StockPage> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter some text';
                     }
+                    try {
+                      int.parse(value);
+                    } catch (e) {
+                      return 'Please enter an integer value';
+                    }
                     productQuant = int.parse(value);
                     return null;
                   },
@@ -245,7 +262,7 @@ class _StockPageState extends State<StockPage> {
     );
   }
 
-  editProduct(BuildContext context) {
+  Future editProduct(BuildContext context) {
     String? enteredID;
     return showDialog(
       context: context,
@@ -299,13 +316,13 @@ class _StockPageState extends State<StockPage> {
     );
   }
 
-  showEditForm(BuildContext context, Map<String, dynamic> product) {
+  Future showEditForm(BuildContext context, Map<String, dynamic> product) {
     productID = product['productId'];
     productName = product['productName'];
     productPrice = product['productPrice'];
     productQuant = product['stockCount'];
 
-    showDialog(
+    return showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -364,6 +381,11 @@ class _StockPageState extends State<StockPage> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a product stock';
+                    }
+                    try {
+                      int.parse(value);
+                    } catch (e) {
+                      return 'Please enter an integer value';
                     }
                     return null; // Return null if the value is valid
                   },

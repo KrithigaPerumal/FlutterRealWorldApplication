@@ -1,7 +1,7 @@
 import 'package:billing_system_application/bills.dart';
 import 'package:billing_system_application/products.dart';
-import 'package:billing_system_application/showbills.dart';
-import 'package:billing_system_application/stockpage.dart';
+import 'package:billing_system_application/show_bills.dart';
+import 'package:billing_system_application/stock_page.dart';
 import 'package:flutter/material.dart';
 
 List<Bills> billList = [];
@@ -21,6 +21,7 @@ class _BillingPageState extends State<BillingPage> {
   void initState() {
     super.initState();
     Bills.readJson();
+    addProductsToSuggestions();
   }
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -31,10 +32,55 @@ class _BillingPageState extends State<BillingPage> {
   int prodStock = 0;
   String billDate = "";
 
+  String displayProdID = "";
+  int displayProduQuant = 0;
+
   List<CartList> cartList = [];
+
+  //instead of these values - product ids and names from the products.json file.
+  //forget the product id. searching and billing is based on product name only.
+  //since the suggestions are directly fetched from json file and the suggestions.index will be set in the text form field, the typo will be problem.
+  //to do: example: p is typed pen and pencil should be displayed.
+  //error: at first the first index value is present
+  //when backspacing the suggestions disappers even when typed again.
+  List<String> _suggestions = [];
+
+  void addProductsToSuggestions() {
+    for (var prodName in newProducts) {
+      _suggestions.add(prodName.productName);
+    }
+  }
 
   final _prodIdController = TextEditingController();
   final _quantityController = TextEditingController();
+
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey();
+
+  void updateSuggestions(String value) {
+    setState(() {
+      _suggestions = _filterSuggestions(value);
+    });
+  }
+
+  String _productData = "";
+
+  void displayProductData(String productName) {
+    _productData = productName;
+    int index = jsonData
+        .indexWhere((product) => product['productName'] == _productData);
+    displayProduQuant = (index != -1) ? jsonData[index]['stockCount'] : 0;
+    displayProdID = (index != -1) ? jsonData[index]['productId'] : "Nil";
+  }
+
+  List<String> _filterSuggestions(String query) {
+    // Filter suggestions based on the query
+    if (query.isEmpty) {
+      return [];
+    }
+    return _suggestions
+        .where((suggestion) => suggestion.toLowerCase().startsWith(query))
+        .toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,24 +118,40 @@ class _BillingPageState extends State<BillingPage> {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: SizedBox(
               width: MediaQuery.of(context).size.width * 0.75,
-              height: MediaQuery.of(context).size.height * 0.30,
+              height: MediaQuery.of(context).size.height * 0.45,
               child: Form(
                 key: _formKey,
                 child: Column(
                   children: [
-                    TextFormField(
-                      controller: _prodIdController,
-                      decoration: InputDecoration(
-                        hintText: 'Enter product Id',
-                      ),
-                      validator: (String? value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter some text';
-                        }
-                        prodId = value;
-                        return null;
+                    Autocomplete<String>(
+                      //fieldHintText: 'Enter product Name', // Adding hint text
+                      optionsBuilder: (TextEditingValue textEditingValue) {
+                        return _suggestions.where((String option) {
+                          return option
+                              .toLowerCase()
+                              .contains(textEditingValue.text.toLowerCase());
+                        });
+                      },
+                      onSelected: (String selectedOption) {
+                        _prodIdController.text = selectedOption;
+                        prodName = selectedOption;
+                        displayProductData(selectedOption);
                       },
                     ),
+                    
+                    SizedBox(height: 10),
+                    if (_productData
+                        .isNotEmpty) // Show only if there's product data
+                      ListTile(
+                        title: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Text('ID: $displayProdID'),
+                            Text('Available stock: $displayProduQuant'),
+                          ],
+                        ),
+                        // Display relevant product data here
+                      ),
                     TextFormField(
                       controller: _quantityController,
                       decoration: InputDecoration(
@@ -117,15 +179,16 @@ class _BillingPageState extends State<BillingPage> {
                             if (_formKey.currentState!.validate()) {
                               _formKey.currentState!.save();
 
-                              int index = jsonData.indexWhere(
-                                  (product) => product['productId'] == prodId);
+                              int index = jsonData.indexWhere((product) =>
+                                  product['productName'] == prodName);
                               if (index != -1) {
                                 int quantity =
                                     int.parse(_quantityController.text);
-                                prodName = jsonData[index]['productName'];
+                                //prodName = jsonData[index]['productName'];
                                 prodPrice =
                                     jsonData[index]['productPrice'] * quantity;
                                 prodStock = jsonData[index]['stockCount'];
+                                prodId = jsonData[index]['productId'];
 
                                 //procceed to add to cart only when the entered quantity is avaiable in the stock.
                                 if (quantity <= prodStock) {
@@ -134,6 +197,7 @@ class _BillingPageState extends State<BillingPage> {
                                       productName: prodName,
                                       stockCount: quantity,
                                       productPrice: prodPrice);
+
                                   setState(() {
                                     cartList.add(newprod);
                                   });
@@ -158,6 +222,8 @@ class _BillingPageState extends State<BillingPage> {
                             }
                             _prodIdController.clear();
                             _quantityController.clear();
+                            _productData = "";
+                            updateSuggestions('');
                           },
                           child: Text("Add to Cart"),
                         ),
@@ -210,19 +276,28 @@ class _BillingPageState extends State<BillingPage> {
                   child: FloatingActionButton(
                 heroTag: "butn1",
                 onPressed: () async {
-                  Bills newbill = Bills(
-                      totalPrice: totalPrice,
-                      cartProducts: cartList,
-                      billedDate: billDate);
-                  //check wheather the set state is required here?
-                  allbillsList.add(newbill);
-                  await Bills.writeBillsJson(allbillsList);
-                  setState(() {
-                    updateProductStock(cartList);
-                    showBill(context);
-                    jsonData =
-                        newProducts.map((product) => product.toJson()).toList();
-                  });
+                  if (cartList.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Empty Cart to generate Bill'),
+                      ),
+                    );
+                  } else {
+                    Bills newbill = Bills(
+                        totalPrice: totalPrice,
+                        cartProducts: cartList,
+                        billedDate: billDate);
+                    //check wheather the set state is required here?
+                    allbillsList.add(newbill);
+                    await Bills.writeBillsJson(allbillsList);
+                    setState(() {
+                      updateProductStock(cartList);
+                      showBill(context);
+                      jsonData = newProducts
+                          .map((product) => product.toJson())
+                          .toList();
+                    });
+                  }
                 },
                 child: Text("Bill"),
               )),

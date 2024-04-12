@@ -1,7 +1,7 @@
-import 'package:billing_system_application/billingpage.dart';
+import 'package:billing_system_application/billing_page.dart';
 import 'package:billing_system_application/bills.dart';
 import 'package:billing_system_application/products.dart';
-import 'package:billing_system_application/stockpage.dart';
+import 'package:billing_system_application/stock_page.dart';
 import 'package:flutter/material.dart';
 
 class ShowBillsPage extends StatefulWidget {
@@ -14,16 +14,20 @@ class ShowBillsPage extends StatefulWidget {
 class _ShowBillsPageState extends State<ShowBillsPage> {
   double income = 0;
   String? selectedDate;
-
+  String nowDate = "";
   @override
   void initState() {
     super.initState();
     Bills.readJson();
     calculateIncome();
     print(income);
+    DateTime now = DateTime.now();
+    int year = now.year;
+    int month = now.month;
+    int day = now.day;
+    nowDate = "$day/$month/$year";
   }
 
-  @override
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,13 +90,18 @@ class _ShowBillsPageState extends State<ShowBillsPage> {
           Expanded(
             child: ListView.builder(
               itemCount: selectedDate == null
-                  ? allbillsList.length
+                  //here provide today's bills.
+                  ? allbillsList
+                      .where((bill) => bill.billedDate == nowDate)
+                      .length
                   : allbillsList
                       .where((bill) => bill.billedDate == selectedDate)
                       .length,
               itemBuilder: (context, index) {
                 Bills bill = selectedDate == null
-                    ? allbillsList[index]
+                    ? allbillsList
+                        .where((bill) => bill.billedDate == nowDate)
+                        .toList()[index]
                     : allbillsList
                         .where((bill) => bill.billedDate == selectedDate)
                         .toList()[index];
@@ -115,7 +124,9 @@ class _ShowBillsPageState extends State<ShowBillsPage> {
                         jsonData = newProducts
                             .map((product) => product.toJson())
                             .toList();
+                            print(index);
                         allbillsList.removeAt(index);
+                        
                       });
                       await Bills.writeBillsJson(allbillsList);
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -168,7 +179,7 @@ class _ShowBillsPageState extends State<ShowBillsPage> {
     );
   }
 
-  showIncome(BuildContext context) {
+  Future showIncome(BuildContext context) {
     return showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -180,7 +191,7 @@ class _ShowBillsPageState extends State<ShowBillsPage> {
   }
 
   //update the products.json - call the writeto json.
-  updateCancelledBill(List<CartList> cartlist) {
+  void updateCancelledBill(List<CartList> cartlist) {
     //getting traversed twice - how n why?
     for (var product in cartlist) {
       for (var productStock in newProducts) {
@@ -196,7 +207,7 @@ class _ShowBillsPageState extends State<ShowBillsPage> {
     Products.writeJson(newProducts);
   }
 
-  calculateIncome() {
+ void calculateIncome() {
     for (var bill in allbillsList) {
       income += bill.totalPrice;
     }
