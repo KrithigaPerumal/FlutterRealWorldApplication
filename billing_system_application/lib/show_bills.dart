@@ -1,5 +1,6 @@
 import 'package:billing_system_application/billing_page.dart';
 import 'package:billing_system_application/bills.dart';
+import 'package:billing_system_application/custom_drawer.dart';
 import 'package:billing_system_application/products.dart';
 import 'package:billing_system_application/stock_page.dart';
 import 'package:flutter/material.dart';
@@ -33,28 +34,26 @@ class _ShowBillsPageState extends State<ShowBillsPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.purple,
-        automaticallyImplyLeading: false,
-        title: Row(
-          children: [
-            IconButton(
+        leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => BillingPage()),
-                );
+                Scaffold.of(context).openDrawer(); // Open the drawer
               },
               icon: Icon(
-                Icons.arrow_back_ios_new_sharp,
+                Icons.menu,
                 color: Colors.white,
-              ),
-            ),
-            Text(
-              "All Bills",
-              style: TextStyle(color: Colors.white),
-            ),
-          ],
+              ), // Drawer icon
+            );
+          },
+        ),
+        automaticallyImplyLeading: false,
+        title: const Text(
+          "All Bills",
+          style: TextStyle(color: Colors.white),
         ),
       ),
+      drawer: customDrawer(context),
       body: Column(
         children: [
           ElevatedButton(
@@ -124,9 +123,8 @@ class _ShowBillsPageState extends State<ShowBillsPage> {
                         jsonData = newProducts
                             .map((product) => product.toJson())
                             .toList();
-                            print(index);
+                        print(index);
                         allbillsList.removeAt(index);
-                        
                       });
                       await Bills.writeBillsJson(allbillsList);
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -207,7 +205,7 @@ class _ShowBillsPageState extends State<ShowBillsPage> {
     Products.writeJson(newProducts);
   }
 
- void calculateIncome() {
+  void calculateIncome() {
     for (var bill in allbillsList) {
       income += bill.totalPrice;
     }
