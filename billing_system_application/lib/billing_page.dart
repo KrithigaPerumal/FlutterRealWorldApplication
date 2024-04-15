@@ -37,12 +37,6 @@ class _BillingPageState extends State<BillingPage> {
 
   List<CartList> cartList = [];
 
-  //instead of these values - product ids and names from the products.json file.
-  //forget the product id. searching and billing is based on product name only.
-  //since the suggestions are directly fetched from json file and the suggestions.index will be set in the text form field, the typo will be problem.
-  //to do: example: p is typed pen and pencil should be displayed.
-  //error: at first the first index value is present
-  //when backspacing the suggestions disappers even when typed again.
   List<String> _suggestions = [];
 
   void addProductsToSuggestions() {
@@ -53,8 +47,6 @@ class _BillingPageState extends State<BillingPage> {
 
   final _prodIdController = TextEditingController();
   final _quantityController = TextEditingController();
-
-  //final GlobalKey<AnimatedListState> _listKey = GlobalKey();
 
   void updateSuggestions(String value) {
     setState(() {
@@ -122,7 +114,6 @@ class _BillingPageState extends State<BillingPage> {
                 child: Column(
                   children: [
                     Autocomplete<String>(
-                      //fieldHintText: 'Enter product Name', // Adding hint text
                       optionsBuilder: (TextEditingValue textEditingValue) {
                         return _suggestions.where((String option) {
                           return option
@@ -131,7 +122,6 @@ class _BillingPageState extends State<BillingPage> {
                         });
                       },
                       onSelected: (String selectedOption) {
-                        //_prodIdController.text = selectedOption;
                         prodName = selectedOption;
                         displayProductData(selectedOption);
                       },
@@ -147,7 +137,6 @@ class _BillingPageState extends State<BillingPage> {
                             Text('Available stock: $displayProduQuant'),
                           ],
                         ),
-                        // Display relevant product data here
                       ),
                     TextFormField(
                       controller: _quantityController,
@@ -166,7 +155,7 @@ class _BillingPageState extends State<BillingPage> {
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: FloatingActionButton(
-                          heroTag: "butn2",
+                          heroTag: "butn1",
                           onPressed: () {
                             DateTime now = DateTime.now();
                             int year = now.year;
@@ -181,13 +170,10 @@ class _BillingPageState extends State<BillingPage> {
                               if (index != -1) {
                                 int quantity =
                                     int.parse(_quantityController.text);
-                                //prodName = jsonData[index]['productName'];
                                 prodPrice =
                                     jsonData[index]['productPrice'] * quantity;
                                 prodStock = jsonData[index]['stockCount'];
                                 prodId = jsonData[index]['productId'];
-
-                                //procceed to add to cart only when the entered quantity is avaiable in the stock.
                                 if (quantity <= prodStock) {
                                   CartList newprod = CartList(
                                       productId: prodId,
@@ -220,7 +206,6 @@ class _BillingPageState extends State<BillingPage> {
                             _prodIdController.clear();
                             _quantityController.clear();
                             _productData = "";
-                            //updateSuggestions('');
                           },
                           child: Text("Add to Cart"),
                         ),
@@ -271,7 +256,7 @@ class _BillingPageState extends State<BillingPage> {
             children: [
               SizedBox(
                   child: FloatingActionButton(
-                heroTag: "butn1",
+                heroTag: "butn2",
                 onPressed: () async {
                   if (cartList.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -301,7 +286,7 @@ class _BillingPageState extends State<BillingPage> {
               SizedBox(
                 width: 60,
                 child: FloatingActionButton(
-                   heroTag: "butn2",
+                  heroTag: "butn3",
                   onPressed: () {
                     //empty the cart items.
                     setState(() {
@@ -326,12 +311,8 @@ class _BillingPageState extends State<BillingPage> {
   updateProductStock(List<CartList> cartlist) {
     for (var product in cartlist) {
       for (var productStock in newProducts) {
-        print(
-            "before subtraction ${productStock.productId}- ${productStock.stockCount}");
         if (product.productId == productStock.productId) {
           productStock.stockCount -= product.stockCount;
-          print(
-              "after subtraction ${productStock.productId}- ${productStock.stockCount}");
         }
       }
     }

@@ -26,25 +26,13 @@ class _StockPageState extends State<StockPage> {
   double productPrice = 0;
   int productQuant = 0;
 
-  Future<List<dynamic>> readJson() async {
-    final directory = await getApplicationDocumentsDirectory();
-    print(directory);
-    final file = File('${directory.path}/products.json');
-    print(file);
-    if (await file.exists()) {
-      final jsonString = await file.readAsString();
-      return jsonDecode(jsonString);
-    }
-    return [];
-  }
 
   Iterable <dynamic> filteredProducts = [];
   //the objects should be written to the json file only when the application is closed. -- whenver the user taps a button - this function has to be called.
   @override
   void initState() {
     super.initState();
-    print("stock init state is called");
-    readJson().then((data) {
+    Products.readJson().then((data) {
       setState(() {
         jsonData = List<Map<String, dynamic>>.from(data);
       });
@@ -168,6 +156,7 @@ class _StockPageState extends State<StockPage> {
                         //what happens if i dont pass the context here?
                         formForProduct(context);
                       },
+                     //tooltip: "Add",
                       child: const Text("Add"),
                     ),
                     FloatingActionButton(
@@ -175,6 +164,7 @@ class _StockPageState extends State<StockPage> {
                       onPressed: () {
                         editProduct(context);
                       },
+                      //tooltip: "Edit",
                       child: const Text("Edit"),
                     ),
                     /*  FloatingActionButton(
@@ -297,7 +287,6 @@ class _StockPageState extends State<StockPage> {
                     filteredProducts =
                         newProducts.map((product) => product.toJson()).toList();
                   });
-                  print(productID);
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(

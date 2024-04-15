@@ -21,7 +21,6 @@ class _ShowBillsPageState extends State<ShowBillsPage> {
     super.initState();
     Bills.readJson();
     calculateIncome();
-    print(income);
     DateTime now = DateTime.now();
     int year = now.year;
     int month = now.month;
@@ -123,7 +122,6 @@ class _ShowBillsPageState extends State<ShowBillsPage> {
                         jsonData = newProducts
                             .map((product) => product.toJson())
                             .toList();
-                        print(index);
                         allbillsList.removeAt(index);
                       });
                       await Bills.writeBillsJson(allbillsList);
@@ -193,12 +191,8 @@ class _ShowBillsPageState extends State<ShowBillsPage> {
     //getting traversed twice - how n why?
     for (var product in cartlist) {
       for (var productStock in newProducts) {
-        print(
-            "before subtraction ${productStock.productId}- ${productStock.stockCount}");
         if (product.productId == productStock.productId) {
           productStock.stockCount += product.stockCount;
-          print(
-              "after subtraction ${productStock.productId}- ${productStock.stockCount}");
         }
       }
     }

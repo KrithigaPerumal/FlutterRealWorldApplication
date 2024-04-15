@@ -28,10 +28,7 @@ class MyApp extends StatelessWidget {
 
 Future<void> createUsersJsonFile() async {
   final directory = await getApplicationDocumentsDirectory();
-  print(directory);
   final file = File('${directory.path}/users.json');
-  print(file);
-
   // Sample user data
   List<Map<String, dynamic>> users = [
     {"email": "user1@example.com", "password": "password1"},
@@ -44,6 +41,4 @@ Future<void> createUsersJsonFile() async {
 
   // Write JSON data to file
   await file.writeAsString(jsonString);
-
-  print('users.json file created: ${file.path}');
 }
