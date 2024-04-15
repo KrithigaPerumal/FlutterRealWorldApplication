@@ -23,14 +23,11 @@ class _UserLoginPageState extends State<UserLoginPage> {
 
   Future<List<dynamic>> readUsersJson() async {
     final directory = await getApplicationDocumentsDirectory();
-    print(directory);
     final file = File('${directory.path}/users.json');
-    print(file);
     if (await file.exists()) {
       final jsonString = await file.readAsString();
       return jsonDecode(jsonString);
     } else {
-      print('file does not exists');
     }
     return [];
   }
@@ -38,12 +35,9 @@ class _UserLoginPageState extends State<UserLoginPage> {
   @override
   void initState() {
     super.initState();
-    print("init state is called");
     readUsersJson().then((data) {
       setState(() {
         usersData = List<Map<String, dynamic>>.from(data);
-        print(usersData);
-        print(usersData.length);
       });
     }).catchError((error) {});
   }

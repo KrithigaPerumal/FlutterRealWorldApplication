@@ -33,17 +33,20 @@ class Products {
 
   static Future<void> writeJson(List<Products> productsList) async {
     final directory = await getApplicationDocumentsDirectory();
-    print(directory);
     final file = File('${directory.path}/products.json');
-    print(file);
 
     final jsonProducts =
         jsonEncode(productsList.map((product) => product.toJson()).toList());
-    print(jsonProducts.length);
     await file.writeAsString(jsonProducts);
-    //print(jsonProducts.length);
-    print("run successfully");
     
-    
+  }
+   static Future<List<dynamic>> readJson() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final file = File('${directory.path}/products.json');
+    if (await file.exists()) {
+      final jsonString = await file.readAsString();
+      return jsonDecode(jsonString);
+    }
+    return [];
   }
 }
