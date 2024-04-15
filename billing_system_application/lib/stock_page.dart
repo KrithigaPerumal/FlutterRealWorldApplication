@@ -1,8 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:billing_system_application/billing_page.dart';
+import 'package:billing_system_application/custom_drawer.dart';
 import 'package:billing_system_application/products.dart';
-import 'package:billing_system_application/user_login.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -39,72 +38,124 @@ class _StockPageState extends State<StockPage> {
     return [];
   }
 
+  Iterable <dynamic> filteredProducts = [];
   //the objects should be written to the json file only when the application is closed. -- whenver the user taps a button - this function has to be called.
   @override
   void initState() {
     super.initState();
-    print("init state is called");
+    print("stock init state is called");
     readJson().then((data) {
       setState(() {
         jsonData = List<Map<String, dynamic>>.from(data);
       });
     }).catchError((error) {});
+    filteredProducts = List.from(jsonData);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.amber.shade100,
+        backgroundColor: Colors.white,
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          actions: [
-            TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const UserLoginPage()),
-                  );
-                },
-                child: const Text(
-                  "Log out",
-                  style: TextStyle(color: Colors.white, fontSize: 20),
-                ))
-          ],
           title: const Text(
             "Products Stocks",
             style: TextStyle(color: Colors.white, fontSize: 20),
           ),
           backgroundColor: Colors.purple,
+          leading: Builder(
+            builder: (BuildContext context) {
+              return IconButton(
+                onPressed: () {
+                  Scaffold.of(context).openDrawer(); // Open the drawer
+                },
+                icon: Icon(
+                  Icons.menu,
+                  color: Colors.white,
+                ), // Drawer icon
+              );
+            },
+          ),
         ),
+        drawer: customDrawer(context),
         body: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
+                TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Filter products',
+                  ),
+                  onChanged: (value) {
+                    // Filter products based on the input value
+                    setState(() {
+                      filteredProducts = jsonData.where((product) =>
+                          product['productName']
+                              .toLowerCase()
+                              .startsWith(value.toLowerCase()));
+                    });
+                  },
+                ),
                 Table(
-                  border: TableBorder.all(width: 1.0, color: Colors.black),
-                  children: jsonData.map<TableRow>((product) {
-                    return TableRow(
+                  // border: TableBorder.all(width: 1.0, color: Colors.black),
+                  children: [
+                    // Heading row
+                    const TableRow(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(product['productId'].toString()),
+                        TableCell(
+                          child: Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Product ID',
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                          ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(product['productName'].toString()),
+                        TableCell(
+                          child: Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Product Name',
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                          ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(product['stockCount'].toString()),
+                        TableCell(
+                          child: Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Stock Count',
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                          ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(product['productPrice'].toString()),
+                        TableCell(
+                          child: Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Product Price',
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                          ),
                         ),
                       ],
-                    );
-                  }).toList(),
+                    ),
+                    // Data rows
+                    ...filteredProducts.map<TableRow>((product) {
+                      return TableRow(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(product['productId'].toString()),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(product['productName'].toString()),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(product['stockCount'].toString()),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(product['productPrice'].toString()),
+                          ),
+                        ],
+                      );
+                    }).toList(),
+                  ],
                 ),
                 const Spacer(),
                 Row(
@@ -126,7 +177,7 @@ class _StockPageState extends State<StockPage> {
                       },
                       child: const Text("Edit"),
                     ),
-                    FloatingActionButton(
+                    /*  FloatingActionButton(
                       heroTag: "btn3",
                       onPressed: () {
                         Navigator.push(
@@ -136,7 +187,7 @@ class _StockPageState extends State<StockPage> {
                         );
                       },
                       child: const Text("Billing"),
-                    ),
+                    ), */
                   ],
                 ),
               ],
@@ -242,7 +293,8 @@ class _StockPageState extends State<StockPage> {
 
                   await Products.writeJson(newProducts);
                   setState(() {
-                    jsonData =
+                    //previously jsonData
+                    filteredProducts =
                         newProducts.map((product) => product.toJson()).toList();
                   });
                   print(productID);
@@ -419,7 +471,8 @@ class _StockPageState extends State<StockPage> {
                     await Products.writeJson(newProducts);
                     //this set state - when it is not given, it requires a hot reload, but when given it will change it's state automatically
                     setState(() {
-                      jsonData = newProducts
+                      //previoulsy jsonData
+                      filteredProducts = newProducts
                           .map((product) => product.toJson())
                           .toList();
                     });

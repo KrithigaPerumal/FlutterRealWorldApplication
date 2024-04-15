@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:billing_system_application/dashboard.dart';
 import 'package:billing_system_application/stock_page.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+  String email = "";
 
 class UserLoginPage extends StatefulWidget {
   const UserLoginPage({super.key});
@@ -13,7 +15,7 @@ class UserLoginPage extends StatefulWidget {
 
 class _UserLoginPageState extends State<UserLoginPage> {
   final GlobalKey<FormState> formkey = GlobalKey<FormState>();
-  String email = "";
+
   String password = "";
   bool login = false;
 
@@ -116,7 +118,7 @@ class _UserLoginPageState extends State<UserLoginPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => StockPage()),
+                                builder: (context) => DashBoard()),
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(

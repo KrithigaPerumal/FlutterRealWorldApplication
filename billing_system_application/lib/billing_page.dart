@@ -1,6 +1,6 @@
 import 'package:billing_system_application/bills.dart';
+import 'package:billing_system_application/custom_drawer.dart';
 import 'package:billing_system_application/products.dart';
-import 'package:billing_system_application/show_bills.dart';
 import 'package:billing_system_application/stock_page.dart';
 import 'package:flutter/material.dart';
 
@@ -54,7 +54,7 @@ class _BillingPageState extends State<BillingPage> {
   final _prodIdController = TextEditingController();
   final _quantityController = TextEditingController();
 
-  final GlobalKey<AnimatedListState> _listKey = GlobalKey();
+  //final GlobalKey<AnimatedListState> _listKey = GlobalKey();
 
   void updateSuggestions(String value) {
     setState(() {
@@ -89,27 +89,25 @@ class _BillingPageState extends State<BillingPage> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: Colors.purple,
-        title: Row(
-          children: [
-            IconButton(
+        leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => StockPage()),
-                );
+                Scaffold.of(context).openDrawer(); // Open the drawer
               },
               icon: Icon(
-                Icons.arrow_back_ios_new_sharp,
+                Icons.menu,
                 color: Colors.white,
-              ),
-            ),
-            Text(
-              "Billing Page",
-              style: TextStyle(color: Colors.white),
-            ),
-          ],
+              ), // Drawer icon
+            );
+          },
+        ),
+        title: const Text(
+          "Billing Page",
+          style: TextStyle(color: Colors.white),
         ),
       ),
+      drawer: customDrawer(context),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -133,12 +131,11 @@ class _BillingPageState extends State<BillingPage> {
                         });
                       },
                       onSelected: (String selectedOption) {
-                        _prodIdController.text = selectedOption;
+                        //_prodIdController.text = selectedOption;
                         prodName = selectedOption;
                         displayProductData(selectedOption);
                       },
                     ),
-                    
                     SizedBox(height: 10),
                     if (_productData
                         .isNotEmpty) // Show only if there's product data
@@ -223,7 +220,7 @@ class _BillingPageState extends State<BillingPage> {
                             _prodIdController.clear();
                             _quantityController.clear();
                             _productData = "";
-                            updateSuggestions('');
+                            //updateSuggestions('');
                           },
                           child: Text("Add to Cart"),
                         ),
@@ -302,20 +299,22 @@ class _BillingPageState extends State<BillingPage> {
                 child: Text("Bill"),
               )),
               SizedBox(
+                width: 60,
                 child: FloatingActionButton(
-                  heroTag: "btn2",
+                   heroTag: "butn2",
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => ShowBillsPage()),
-                    );
+                    //empty the cart items.
+                    setState(() {
+                      cartList.clear();
+                      totalPrice = 0;
+                    });
                   },
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text("View Bills"),
+                    child: Text("Cancel Bill"),
                   ),
                 ),
-              ),
+              )
             ],
           )
         ],
